@@ -1,6 +1,9 @@
 """
 OpenModelica Simulator - Application Launcher
 Simple wrapper to launch the main application with splash screen
+
+Original development with GitHub Copilot
+Professional launcher system with splash screen and countdown
 """
 
 import sys
