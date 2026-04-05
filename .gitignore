@@ -1,0 +1,105 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# PyInstaller
+*.manifest
+*.spec
+build/
+dist/
+
+# Executables (don't commit .exe files)
+*.exe
+*.dll
+*.so
+*.dylib
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Project specific
+error_log.txt
+*.mat
+*.xml
+model/TwoConnectedTanks_res.mat
+__pycache__/
+*.pyc
+
+# Generated files
+dist/
+build/
+OpenModelica\ Simulator.spec
+tempCodeRunnerFile.py
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+*~
+.cache/
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+Thumbs.db
+.DS_Store
+desktop.ini
+*.lnk
+
+# Don't ignore these (they're important!)
+!model/TwoConnectedTanks.exe
+!model/TwoConnectedTanks.bat
+!model/TwoConnectedTanks_init.xml
+!model/TwoConnectedTanks_info.json
+!requirements.txt
+!launcher.bat
+!run.bat
+!build_exe.bat
+!CLEANUP.bat
+!README.md
+!src/
+!launcher.py
+!view_results.py
