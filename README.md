@@ -13,7 +13,8 @@ A professional PyQt6-based GUI application for executing OpenModelica simulation
 - [Usage](#usage)
 - [Architecture & Design](#architecture--design)
 - [Code Quality](#code-quality)
-- [Troubleshooting](#troubleshooting)
+- [Building Standalone Executable](#-building-standalone-executable)
+- [Troubleshooting](#-troubleshooting)
 - [API Documentation](#api-documentation)
 - [Contributing](#contributing)
 
@@ -344,7 +345,105 @@ python src/app.py 2>&1 | grep "INFO"     # See operations
 
 ---
 
-## 🔧 Troubleshooting
+## � Building Standalone Executable
+
+Convert the application to a standalone `.exe` that doesn't require Python installation.
+
+### Requirements
+- Python 3.8+ (must be in PATH)
+- Dependencies installed: `pip install -r requirements.txt`
+- Virtual environment activated: `.venv\Scripts\activate.bat`
+
+### Build Steps
+
+#### Option 1: Automated Build (Recommended)
+```bash
+cd IITB_Project
+build_exe.bat
+```
+
+This automatically:
+1. Kills any running instances of the previous exe
+2. Creates virtual environment (if needed)
+3. Installs all dependencies
+4. Installs PyInstaller
+5. Builds the executable directly from `src/app.py`
+6. Verifies the result
+
+**Output**: `dist/OpenModelica Simulator.exe` (~100-150 MB, no Python needed)
+
+#### Option 2: Manual Build
+```bash
+# Activate environment
+.venv\Scripts\activate.bat
+
+# Install PyInstaller
+pip install pyinstaller
+
+# Build directly from app.py
+pyinstaller --onefile --windowed --name "OpenModelica Simulator" ^
+    --add-data "src;src" --add-data "model;model" ^
+    --hidden-import=PyQt6 src/app.py
+```
+
+### Running the Built Executable
+
+```bash
+# Method 1: Double-click from File Explorer
+dist/OpenModelica Simulator.exe
+
+# Method 2: From command line
+"dist/OpenModelica Simulator.exe"
+
+# Method 3: Create desktop shortcut
+Right-click exe → Send to → Desktop (create shortcut)
+```
+
+### First Launch
+
+The first time you run the bundled exe:
+- Extracts bundled files to temporary directory
+- Takes 3-5 seconds longer than subsequent runs
+- Shows the main GUI application directly
+
+### Single Executable vs Source Code
+
+| Aspect | Source Code | Built Exe |
+|--------|----------|-----------|
+| **Python Installation** | Required | Not needed |
+| **Startup Time** | Fast ~1 sec | ~3-5 sec (first launch) |
+| **Modifying Code** | Easy | Requires rebuild |
+| **Distribution** | Harder | Easier (single file) |
+| **File Size** | ~50 KB code | ~100-150 MB exe |
+| **Model Configuration** | In model/ folder | Editable |
+
+### Build Troubleshooting
+
+**Issue**: "PermissionError: Access is denied" during build
+```bash
+# Solution: Kill running exe and rebuild
+taskkill /IM "OpenModelica Simulator.exe" /F
+build_exe.bat
+```
+
+**Issue**: "Module not found" or "PyQt6 import error"
+```bash
+# Solution: Reinstall dependencies
+pip install -r requirements.txt
+pip install --upgrade pyinstaller PyQt6
+build_exe.bat
+```
+
+**Issue**: Build completes but exe won't run
+```bash
+# The exe needs all bundled files extracted on first run
+# This takes 5+ seconds - wait and check if it launches
+# If still fails, check: build/OpenModelica Simulator/warn-*.txt
+```
+
+---
+
+## �🔧 Troubleshooting
 
 ### Issue: "Application file not found" when using launcher
 

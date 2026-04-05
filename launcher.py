@@ -239,57 +239,98 @@ class SplashScreen(QDialog):
     
     def _launch_main_app(self) -> None:
         """
-        Launch the main application in a new process.
+        Launch the main application.
         
-        Locates the main application file (src/app.py) relative to this
-        launcher script and starts it using the Python interpreter.
-        This runs the application in a separate process so the launcher
-        can exit independently.
+        When running from source (development), spawns a subprocess.
+        When running as bundled exe, directly imports and runs the app.
         
         Returns:
             None
-            
-        Error Handling:
-            - Shows error dialog if app.py file is not found
-            - Shows error dialog if subprocess cannot be created
-            - Logs all errors for debugging
         """
         self.timer.stop()
         
-        # Get path to main application file
-        app_file = Path(__file__).parent / "src" / "app.py"
+        logger.info("Launching main application...")
         
-        logger.info(f"Attempting to launch: {app_file}")
+        is_bundled = getattr(sys, 'frozen', False)
         
-        # Verify app file exists
+        if is_bundled:
+            # BUNDLED EXE: Directly import and run app in same process
+            # This is more reliable than spawning subprocess
+            try:
+                logger.info("Running in bundled mode - importing app directly")
+                # Add src to path if needed
+                src_path = Path(sys._MEIPASS) / "src"
+                if str(src_path) not in sys.path:
+                    sys.path.insert(0, str(src_path))
+                    logger.info(f"Added to sys.path: {src_path}")
+                
+                # Import and run the main application
+                from app import main as app_main
+                logger.info("Successfully imported app.main")
+                self.close()  # Close splash screen
+                app_main()  # Run main application
+                
+            except ImportError as e:
+                error_msg = (
+                    f"Failed to import application module:\n{str(e)}\n\n"
+                    f"Tried to import 'app' from: {Path(sys._MEIPASS) / 'src'}\n\n"
+                    f"Solutions:\n"
+                    f"1. Rebuild the executable: build_exe.bat\n"
+                    f"2. Ensure src/app.py exists in the project"
+                )
+                logger.error(error_msg)
+                QMessageBox.critical(self, "Import Error", error_msg)
+                
+            except Exception as e:
+                error_msg = f"Failed to launch application:\n{type(e).__name__}: {str(e)}"
+                logger.exception(error_msg)
+                QMessageBox.critical(self, "Launch Error", error_msg)
+        
+        else:
+            # DEVELOPMENT MODE: Spawn subprocess to run Python file
+            logger.info("Running in development mode - spawning subprocess")
+            self._launch_subprocess()
+
+    def _launch_subprocess(self) -> None:
+        """
+        Launch app.py in a separate subprocess (development mode only).
+        
+        Used when running from Python source (not bundled).
+        
+        Returns:
+            None
+        """
+        base_dir = Path(__file__).parent
+        app_file = base_dir / "src" / "app.py"
+        
+        logger.info(f"Attempting to launch subprocess: {app_file}")
+        
         if not app_file.exists():
-            error_msg = f"Application file not found:\n{app_file}\n\nExpected location: src/app.py"
-            logger.error(error_msg)
-            QMessageBox.critical(
-                self,
-                "Application Not Found",
-                error_msg
+            error_msg = (
+                f"Application file not found:\n{app_file}\n\n"
+                f"Expected location: src/app.py\n"
+                f"Base directory: {base_dir}\n\n"
+                f"Solutions:\n"
+                f"1. Check that src/app.py exists\n"
+                f"2. Verify file structure is intact\n"
+                f"3. Ensure you're running from project root"
             )
+            logger.error(error_msg)
+            QMessageBox.critical(self, "File Not Found", error_msg)
             return
         
         try:
-            # Launch in new process
             subprocess.Popen(
                 [sys.executable, str(app_file)],
-                cwd=str(app_file.parent.parent)
+                cwd=str(base_dir)
             )
-            logger.info("Main application launched successfully")
+            logger.info("Subprocess launched successfully")
             self.close()
             
         except FileNotFoundError as e:
             error_msg = f"Python executable not found:\n{str(e)}"
             logger.error(error_msg)
             QMessageBox.critical(self, "Python Not Found", error_msg)
-            
-        except PermissionError as e:
-            error_msg = f"Permission denied when launching application:\n{str(e)}"
-            logger.error(error_msg)
-            QMessageBox.critical(self, "Permission Error", error_msg)
             
         except Exception as e:
             error_msg = f"Failed to launch application:\n{type(e).__name__}: {str(e)}"
